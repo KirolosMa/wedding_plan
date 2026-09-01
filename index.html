@@ -45,8 +45,9 @@
       </a>
     </div>
 
-    <form id="settings-form" class="add-form">
-      <h2>Wedding settings</h2>
+    <details open class="add-details">
+      <summary>Wedding settings</summary>
+      <form id="settings-form" class="add-form">
       <div class="form-grid">
         <label>Couple names<input type="text" data-field="couple_names" placeholder="e.g. Kirolos &amp; ..." /></label>
         <label>Wedding date<input type="date" data-field="wedding_date" /></label>
@@ -56,6 +57,7 @@
         <button type="submit" class="btn btn-primary">Save settings</button>
       </div>
     </form>
+    </details>
   </main>
   <script type="module" src="js/dashboard.js"></script>
 </body>

@@ -39,8 +39,9 @@
       <div class="progress"><div id="progress-bar" class="progress-bar" style="width: 0%;"></div></div>
     </div>
 
-    <form id="add-item-form" class="add-form">
-      <h2>Add a budget line</h2>
+    <details class="add-details">
+      <summary>Add a budget line</summary>
+      <form id="add-item-form" class="add-form">
       <div class="form-grid">
         <label>Category<input type="text" data-field="category" required /></label>
         <label>Estimated cost<input type="number" data-field="estimated_cost" step="0.01" min="0" value="0" /></label>
@@ -51,6 +52,7 @@
         <button type="submit" class="btn btn-primary">Add line</button>
       </div>
     </form>
+    </details>
 
     <div class="table-wrap">
       <table class="data-table">

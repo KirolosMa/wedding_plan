@@ -16,8 +16,9 @@
 
     <p id="banner" class="banner" hidden></p>
 
-    <form id="add-venue-form" class="add-form">
-      <h2>Add a venue</h2>
+    <details class="add-details">
+      <summary>Add a venue</summary>
+      <form id="add-venue-form" class="add-form">
       <div class="form-grid">
         <label>Name<input type="text" data-field="name" required /></label>
         <label>Location<input type="text" data-field="location" /></label>
@@ -50,6 +51,7 @@
         <button type="submit" class="btn btn-primary">Add venue</button>
       </div>
     </form>
+    </details>
 
     <div class="page-header">
       <span></span>

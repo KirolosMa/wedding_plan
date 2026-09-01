@@ -16,8 +16,9 @@
 
     <p id="banner" class="banner" hidden></p>
 
-    <form id="add-item-form" class="add-form">
-      <h2>Add a vendor</h2>
+    <details class="add-details">
+      <summary>Add a vendor</summary>
+      <form id="add-item-form" class="add-form">
       <div class="form-grid">
         <label>Category<input type="text" data-field="category" placeholder="e.g. Catering" /></label>
         <label>Name<input type="text" data-field="name" required /></label>
@@ -39,6 +40,7 @@
         <button type="submit" class="btn btn-primary">Add vendor</button>
       </div>
     </form>
+    </details>
 
     <div class="page-header">
       <span></span>
