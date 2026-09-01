@@ -24,6 +24,7 @@
       <div class="summary-card">
         <h3>Confirmed</h3>
         <div class="value" id="stat-yes">—</div>
+        <span class="muted" id="stat-heads">—</span>
       </div>
       <div class="summary-card">
         <h3>Declined</h3>
@@ -33,6 +34,11 @@
         <h3>Pending</h3>
         <div class="value" id="stat-pending">—</div>
       </div>
+      <div class="summary-card">
+        <h3>Missing mobile</h3>
+        <div class="value" id="stat-no-phone">—</div>
+        <span class="muted">Needed for automated invites</span>
+      </div>
     </div>
 
     <details class="add-details">
@@ -40,6 +46,7 @@
       <form id="add-item-form" class="add-form">
       <div class="form-grid">
         <label>Name<input type="text" data-field="name" required /></label>
+        <label>Mobile<input type="tel" data-field="phone" placeholder="+20 100 123 4567" autocomplete="tel" /></label>
         <label>Side
           <select data-field="side">
             <option value="bride">Bride</option>
@@ -71,7 +78,7 @@
 
     <div class="toolbar">
       <div class="search-box">
-        <input type="search" id="search-input" placeholder="Search guests by name, meal, notes…" aria-label="Search guests" />
+        <input type="search" id="search-input" placeholder="Search name, mobile, meal, notes…" aria-label="Search guests" />
       </div>
       <label class="muted">Show
         <select id="filter-select">
@@ -79,16 +86,30 @@
           <option value="pending">Pending</option>
           <option value="yes">Confirmed</option>
           <option value="no">Declined</option>
+          <option value="no-phone">Missing mobile</option>
+        </select>
+      </label>
+      <label class="muted">Side
+        <select id="side-select">
+          <option value="all">All</option>
+          <option value="bride">Bride</option>
+          <option value="groom">Groom</option>
+          <option value="both">Both</option>
         </select>
       </label>
       <span class="result-count" id="result-count"></span>
+      <div class="toolbar-actions">
+        <button type="button" class="btn btn-secondary" id="copy-numbers">Copy mobiles</button>
+        <button type="button" class="btn btn-secondary" id="export-csv">Export CSV</button>
+      </div>
     </div>
 
     <div class="table-wrap">
-      <table class="data-table">
+      <table class="data-table stacked-table">
         <thead>
           <tr>
             <th>Name</th>
+            <th>Mobile</th>
             <th>Side</th>
             <th>Invited</th>
             <th>RSVP</th>

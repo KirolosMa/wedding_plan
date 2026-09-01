@@ -84,16 +84,62 @@ export function extractLinks(text) {
 }
 
 export function telHref(phone) {
-  const cleaned = String(phone ?? '').replace(/[^\d+]/g, '');
-  return cleaned ? `tel:${cleaned}` : null;
+  const normalized = normalizePhone(phone);
+  return normalized ? `tel:${normalized}` : null;
+}
+
+// Stores numbers in E.164 so a future messaging integration can dial them without guessing.
+// Bare local numbers are assumed Egyptian (+20), which is where this wedding is.
+export function normalizePhone(value, defaultCountry = '20') {
+  const raw = String(value ?? '').trim();
+  if (!raw) return null;
+  let digits = raw.replace(/\D/g, '');
+  if (!digits) return null;
+  if (!raw.startsWith('+')) {
+    if (digits.startsWith('00')) digits = digits.slice(2);
+    else if (digits.startsWith('0')) digits = defaultCountry + digits.slice(1);
+    else if (digits.length <= 10) digits = defaultCountry + digits;
+  }
+  return `+${digits}`;
+}
+
+export function isValidPhone(value) {
+  const digits = (normalizePhone(value) ?? '').replace(/\D/g, '');
+  return digits.length >= 10 && digits.length <= 15;
 }
 
 // Egyptian-local numbers ("0100…") are normalised to the +20 country code for wa.me.
 export function whatsappHref(phone) {
-  let digits = String(phone ?? '').replace(/\D/g, '');
-  if (digits.startsWith('00')) digits = digits.slice(2);
-  else if (digits.startsWith('0')) digits = `20${digits.slice(1)}`;
+  const normalized = normalizePhone(phone);
+  if (!normalized) return null;
+  const digits = normalized.slice(1);
   return digits.length >= 8 ? `https://wa.me/${digits}` : null;
+}
+
+// Spreadsheets execute cells starting with = + - @, so those values are quoted defensively.
+export function toCsv(rows) {
+  return rows
+    .map((row) =>
+      row
+        .map((cell) => {
+          const value = cell === null || cell === undefined ? '' : String(cell);
+          const safe = /^[=+\-@]/.test(value) ? `'${value}` : value;
+          return `"${safe.replace(/"/g, '""')}"`;
+        })
+        .join(',')
+    )
+    .join('\r\n');
+}
+
+export function downloadFile(filename, contents, type = 'text/csv;charset=utf-8') {
+  const url = URL.createObjectURL(new Blob([contents], { type }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000); // revoking straight away cancels the download
 }
 
 let toastHost;

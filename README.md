@@ -9,6 +9,9 @@ GitHub Pages, with data synced across devices via [Supabase](https://supabase.co
 1. Sign up at https://supabase.com and create a new project (free tier).
 2. Go to the **SQL Editor**, paste the contents of [`supabase/schema.sql`](supabase/schema.sql),
    and run it. This creates all tables and opens them up to the public `anon` key.
+   - If your project was created before guest mobile numbers were added, also run
+     [`supabase/migration_add_guest_phone.sql`](supabase/migration_add_guest_phone.sql)
+     (re-running `schema.sql` does the same thing).
 3. (Optional) Also run these in the SQL editor to bulk-load data already gathered:
    - [`supabase/seed_guests.sql`](supabase/seed_guests.sql) — the guest list (side/RSVP/meal
      come in unset — fill those in later on guests.html).

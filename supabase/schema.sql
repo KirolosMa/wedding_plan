@@ -56,8 +56,12 @@ create table if not exists public.guests (
   meal_choice text,
   plus_one boolean not null default false,
   notes text,
+  phone text,
   created_at timestamptz not null default now()
 );
+
+-- Added after the first deploy; keeps re-runs of this file upgrading an existing database.
+alter table public.guests add column if not exists phone text;
 
 create table if not exists public.vendors (
   id uuid primary key default gen_random_uuid(),

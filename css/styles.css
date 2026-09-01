@@ -459,6 +459,46 @@ table.data-table .row-actions {
   flex-wrap: wrap;
 }
 
+.phone-cell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.phone-cell input {
+  flex: 1 1 auto;
+  min-width: 130px;
+}
+
+.phone-actions {
+  display: inline-flex;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.icon-link {
+  text-decoration: none;
+  padding: 2px 4px;
+  border-radius: 6px;
+  line-height: 1;
+}
+
+.icon-link:hover {
+  background: var(--color-bg);
+}
+
+.phone-warning {
+  font-size: 0.72rem;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 /* Badges */
 .badge {
   display: inline-block;
@@ -722,6 +762,65 @@ tr.is-due-soon td:nth-child(4) {
   .card-actions .btn, .form-actions .btn {
     flex: 1;
   }
+  /* Wide editable tables become one card per row, with the header text as inline labels. */
+  table.stacked-table, table.stacked-table tbody, table.stacked-table tr, table.stacked-table td {
+    display: block;
+    width: 100%;
+  }
+  table.stacked-table thead {
+    display: none;
+  }
+  table.stacked-table tr {
+    border-bottom: 1px solid var(--color-border);
+    padding: 8px 4px;
+  }
+  table.stacked-table td {
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    border: 0;
+    padding: 4px 8px;
+  }
+  table.stacked-table td::before {
+    content: attr(data-label);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-muted);
+  }
+  table.stacked-table td.row-actions {
+    display: flex;
+    padding-top: 8px;
+  }
+  table.stacked-table td:not([data-label]) {
+    display: block;
+  }
+  table.stacked-table td:not([data-label])::before {
+    content: none;
+  }
+  table.stacked-table td.row-actions .btn {
+    flex: 1;
+  }
+  table.stacked-table input[type='checkbox'] {
+    width: 20px;
+    height: 20px;
+    justify-self: start;
+  }
+  table.stacked-table input, table.stacked-table select {
+    border-color: var(--color-border);
+    background: var(--color-card);
+    padding: 8px;
+    min-width: 0;
+  }
+  /* Keep the number readable on narrow phones; the call/WhatsApp icons wrap below it. */
+  table.stacked-table .phone-cell {
+    flex-wrap: wrap;
+  }
+  table.stacked-table .phone-cell input {
+    min-width: min(120px, 100%);
+  }
 }
 
 @media (max-width: 480px) {
@@ -732,6 +831,10 @@ tr.is-due-soon td:nth-child(4) {
   }
   .summary-card {
     padding: 12px;
+  }
+  .summary-card h3 {
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
   }
   .summary-card .value {
     font-size: 1.3rem;
