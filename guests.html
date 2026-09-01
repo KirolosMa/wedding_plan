@@ -37,7 +37,6 @@
       <div class="summary-card">
         <h3>Missing mobile</h3>
         <div class="value" id="stat-no-phone">—</div>
-        <span class="muted">Needed for automated invites</span>
       </div>
     </div>
 
@@ -74,6 +73,23 @@
         <button type="submit" class="btn btn-primary">Add guest</button>
       </div>
     </form>
+    </details>
+
+    <details class="add-details">
+      <summary>Import mobiles from your iPhone</summary>
+      <div class="import-panel">
+        <ol class="muted import-steps">
+          <li>On your iPhone open <strong>Contacts</strong>, tap <strong>Lists</strong> → <strong>All Contacts</strong>, then <strong>Select</strong> the people you invited (or use icloud.com → Contacts → Export vCard on a computer).</li>
+          <li>Tap <strong>Share</strong> and save the <code>.vcf</code> file to Files, then open this page on the phone.</li>
+          <li>Choose the file below — matching guests get their mobile filled in. Nothing is uploaded anywhere except your own database.</li>
+        </ol>
+        <label>vCard file<input type="file" id="import-vcf" accept=".vcf,text/vcard,text/x-vcard" /></label>
+        <p class="muted" id="import-status"></p>
+        <div class="form-actions" id="import-actions" hidden>
+          <button type="button" class="btn btn-primary" id="import-apply">Apply</button>
+          <button type="button" class="btn btn-secondary" id="import-cancel">Cancel</button>
+        </div>
+      </div>
     </details>
 
     <div class="toolbar">

@@ -1,5 +1,7 @@
 import { supabase } from './supabaseClient.js';
 import { renderNav } from './nav.js';
+import { renderViewToggle } from './viewToggle.js';
+import { parseVCards, preferredPhone } from './vcard.js';
 import {
   escapeHtml,
   showToast,
@@ -25,6 +27,11 @@ const searchInput = document.getElementById('search-input');
 const resultCount = document.getElementById('result-count');
 const copyButton = document.getElementById('copy-numbers');
 const exportButton = document.getElementById('export-csv');
+const importInput = document.getElementById('import-vcf');
+const importStatus = document.getElementById('import-status');
+const importActions = document.getElementById('import-actions');
+const importApply = document.getElementById('import-apply');
+const importCancel = document.getElementById('import-cancel');
 const statInvited = document.getElementById('stat-invited');
 const statYes = document.getElementById('stat-yes');
 const statNo = document.getElementById('stat-no');
@@ -34,6 +41,7 @@ const statHeads = document.getElementById('stat-heads');
 
 let guests = [];
 let visible = [];
+let pendingImport = [];
 
 function setLoading(message) {
   bodyEl.innerHTML = `<tr><td colspan="${COLUMNS}"><div class="state-message">${message}</div></td></tr>`;
@@ -63,7 +71,7 @@ function renderSummary() {
   statYes.textContent = confirmed.length;
   statNo.textContent = guests.filter((g) => g.rsvp_status === 'no').length;
   statPending.textContent = guests.filter((g) => g.rsvp_status === 'pending').length;
-  statHeads.textContent = `${confirmed.reduce((sum, g) => sum + (g.plus_one ? 2 : 1), 0)} seats incl. +1`;
+  statHeads.textContent = `${confirmed.reduce((sum, g) => sum + (g.plus_one ? 2 : 1), 0)} incl. +1`;
   statNoPhone.textContent = invited.filter((g) => !isValidPhone(g.phone)).length;
 }
 
@@ -247,12 +255,156 @@ window.addEventListener('beforeunload', (event) => {
   event.returnValue = '';
 });
 
+// Names are compared without accents, punctuation or case so "Marie-Thérèse" matches "marie therese".
+function nameKey(value) {
+  return String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Exact name match first; otherwise a guest matches only if exactly one contact contains all
+// of their name words, so "Gihan" never silently picks one of several Gihans.
+function matchGuests(cards) {
+  const contacts = cards
+    .map((card) => ({ name: card.name, key: nameKey(card.name), phone: preferredPhone(card) }))
+    .filter((c) => c.key && c.phone && isValidPhone(c.phone));
+
+  const byKey = new Map();
+  for (const contact of contacts) {
+    const existing = byKey.get(contact.key);
+    if (existing && normalizePhone(existing.phone) !== normalizePhone(contact.phone)) {
+      existing.ambiguous = true;
+    } else if (!existing) {
+      byKey.set(contact.key, { ...contact });
+    }
+  }
+
+  const updates = [];
+  const result = { contacts: contacts.length, updates, alreadySet: 0, unmatched: 0, ambiguous: 0 };
+
+  for (const guest of guests) {
+    if (isValidPhone(guest.phone)) {
+      result.alreadySet += 1;
+      continue;
+    }
+    const key = nameKey(guest.name);
+    if (!key) continue;
+
+    let match = byKey.get(key);
+    if (match?.ambiguous) {
+      result.ambiguous += 1;
+      continue;
+    }
+    if (!match) {
+      const words = key.split(' ');
+      const partial = contacts.filter((c) => words.every((word) => c.key.split(' ').includes(word)));
+      if (partial.length > 1) {
+        result.ambiguous += 1;
+        continue;
+      }
+      match = partial[0];
+    }
+    if (!match) {
+      result.unmatched += 1;
+      continue;
+    }
+    updates.push({ guest, phone: normalizePhone(match.phone), contactName: match.name });
+  }
+
+  return result;
+}
+
+async function applyImport(updates) {
+  let saved = 0;
+  const failures = [];
+  // Chunked so a large address book doesn't fire hundreds of requests at once.
+  for (let i = 0; i < updates.length; i += 10) {
+    const chunk = updates.slice(i, i + 10);
+    const results = await Promise.all(
+      chunk.map(({ guest, phone }) => supabase.from('guests').update({ phone }).eq('id', guest.id))
+    );
+    results.forEach(({ error }, index) => {
+      if (error) {
+        failures.push(`${chunk[index].guest.name}: ${error.message}`);
+        return;
+      }
+      chunk[index].guest.phone = chunk[index].phone;
+      saved += 1;
+    });
+  }
+  return { saved, failures };
+}
+
+importInput.addEventListener('change', async () => {
+  const file = importInput.files?.[0];
+  if (!file) return;
+  importStatus.textContent = `Reading ${file.name}…`;
+  importActions.hidden = true;
+
+  let cards = [];
+  try {
+    cards = parseVCards(await file.text());
+  } catch (error) {
+    importStatus.textContent = `Could not read that file: ${error.message}`;
+    return;
+  }
+  importInput.value = '';
+
+  if (!cards.length) {
+    importStatus.textContent = 'No contacts found in that file — make sure it is a .vcf export.';
+    return;
+  }
+
+  const { contacts, updates, alreadySet, unmatched, ambiguous } = matchGuests(cards);
+  pendingImport = updates;
+  importStatus.textContent =
+    `${cards.length} contacts read (${contacts} with a usable mobile) · ` +
+    `${updates.length} guests can be filled in · ${alreadySet} already have a mobile · ` +
+    `${unmatched} without a matching contact · ${ambiguous} skipped as ambiguous`;
+
+  if (!updates.length) return;
+  importApply.textContent = `Apply ${updates.length} mobile number${updates.length === 1 ? '' : 's'}`;
+  importActions.hidden = false;
+});
+
+importCancel.addEventListener('click', () => {
+  pendingImport = [];
+  importActions.hidden = true;
+  importStatus.textContent = 'Import cancelled.';
+});
+
+importApply.addEventListener('click', async () => {
+  if (!pendingImport.length) return;
+  const updates = pendingImport;
+  pendingImport = [];
+  importActions.hidden = true;
+  importStatus.textContent = `Saving ${updates.length} numbers…`;
+
+  const { saved, failures } = await applyImport(updates);
+  renderAll();
+  const plural = saved === 1 ? '' : 's';
+  importStatus.textContent = failures.length
+    ? `Saved ${saved} number${plural}, ${failures.length} failed. First error — ${failures[0]}`
+    : `Saved ${saved} mobile number${plural}.`;
+  showToast(
+    failures.length
+      ? `Imported ${saved} number${plural}, ${failures.length} failed.`
+      : `Imported ${saved} mobile number${plural}.`,
+    failures.length ? 'error' : 'success'
+  );
+});
+
 filterSelect.addEventListener('change', renderGuests);
 sideSelect.addEventListener('change', renderGuests);
 searchInput.addEventListener('input', renderGuests);
 
 async function init() {
   renderNav('guests');
+  renderViewToggle();
   await loadGuests();
 }
 

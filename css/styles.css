@@ -416,12 +416,48 @@ form input:focus, form select:focus, form textarea:focus {
   border-radius: 10px;
   border: 1px solid var(--color-border);
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  /* The two radial gradients are pinned to the scroller, so they only show while there is
+     more table to scroll to on that side. */
+  background-image:
+    linear-gradient(to right, var(--color-card), rgba(255, 255, 255, 0)),
+    linear-gradient(to left, var(--color-card), rgba(255, 255, 255, 0)),
+    radial-gradient(farthest-side at 0 50%, rgba(58, 46, 46, 0.14), rgba(58, 46, 46, 0)),
+    radial-gradient(farthest-side at 100% 50%, rgba(58, 46, 46, 0.14), rgba(58, 46, 46, 0));
+  background-position: 0 0, 100% 0, 0 0, 100% 0;
+  background-size: 32px 100%, 32px 100%, 14px 100%, 14px 100%;
+  background-repeat: no-repeat;
+  background-attachment: local, local, scroll, scroll;
 }
 
 table.data-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
+}
+
+/* The first column stays put while a wide table scrolls sideways. */
+table.data-table th:first-child, table.data-table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--color-card);
+}
+
+table.data-table thead th:first-child {
+  z-index: 2;
+}
+
+table.data-table tbody tr:nth-child(even) td:first-child {
+  background: #fcf8f5;
+}
+
+table.data-table tbody tr:hover td:first-child {
+  background: #f7ece6;
+}
+
+table.data-table tbody tr.is-dirty td:first-child {
+  background: #fdf3ef;
 }
 
 table.data-table th, table.data-table td {
@@ -584,6 +620,95 @@ table.data-table tr.is-done td input[data-field='title'] {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+/* vCard import panel on the guest list */
+.import-panel {
+  background: var(--color-card);
+  border: 1px dashed var(--color-accent);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.import-steps {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  line-height: 1.5;
+}
+
+.import-steps li {
+  margin-bottom: 4px;
+}
+
+.import-panel label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.import-panel input[type='file'] {
+  display: block;
+  margin-top: 6px;
+  font: inherit;
+  font-size: 0.85rem;
+  max-width: 100%;
+}
+
+.import-panel p {
+  margin: 10px 0 0;
+}
+
+/* Segmented Cards/Table switch; only useful where rows collapse into cards. */
+.view-toggle {  display: none;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-card);
+  padding: 2px;
+  gap: 2px;
+}
+
+.view-toggle button {
+  background: transparent;
+  color: var(--color-muted);
+  border-radius: 999px;
+  padding: 6px 14px;
+  min-height: 32px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.view-toggle button[aria-pressed='true'] {
+  background: var(--color-primary);
+  color: white;
+}
+
+@media (max-width: 640px) {
+  .view-toggle {
+    display: flex;
+    margin-left: auto;
+  }
+  /* Keep the controls above the list compact so the data starts higher up the screen. */
+  .toolbar {
+    gap: 8px;
+  }
+  .toolbar > label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1 1 45%;
+    min-width: 0;
+  }
+  .toolbar > label select {
+    flex: 1;
+    min-width: 0;
+  }
+  .toolbar-actions {
+    flex: 1 1 100%;
+  }
+  .toolbar-actions .btn {
+    flex: 1;
+  }
 }
 
 /* Badges */
@@ -831,6 +956,21 @@ tr.is-due-soon td:nth-child(4) {
   .form-grid {
     grid-template-columns: 1fr;
   }
+  /* Stat cards become a swipeable strip so the list itself starts near the top. */
+  .summary-grid {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+  .summary-card {
+    flex: 0 0 44%;
+    scroll-snap-align: start;
+  }
   /* Give the title the full card width so long names don't break mid-word. */
   .card-heading {
     flex-direction: column;
@@ -849,29 +989,32 @@ tr.is-due-soon td:nth-child(4) {
   .card-actions .btn, .form-actions .btn {
     flex: 1;
   }
-  /* Wide editable tables become one card per row, with the header text as inline labels. */
-  table.stacked-table, table.stacked-table tbody, table.stacked-table tr, table.stacked-table td {
+  /* Wide editable tables become one card per row, unless the Table view is chosen. */
+  [data-table-view='cards'] table.stacked-table,
+  [data-table-view='cards'] table.stacked-table tbody,
+  [data-table-view='cards'] table.stacked-table tr,
+  [data-table-view='cards'] table.stacked-table td {
     display: block;
     width: 100%;
   }
-  table.stacked-table thead {
+  [data-table-view='cards'] table.stacked-table thead {
     display: none;
   }
-  table.stacked-table tr {
+  [data-table-view='cards'] table.stacked-table tr {
     border-bottom: 1px solid var(--color-border);
     padding: 8px 4px;
   }
-  table.stacked-table tr.is-overdue {
+  [data-table-view='cards'] table.stacked-table tr.is-overdue {
     box-shadow: inset 3px 0 0 #b91c1c;
   }
-  table.stacked-table tr.is-due-soon {
+  [data-table-view='cards'] table.stacked-table tr.is-due-soon {
     box-shadow: inset 3px 0 0 #d9a441;
   }
-  table.stacked-table tr.is-overdue td:first-child,
-  table.stacked-table tr.is-due-soon td:first-child {
+  [data-table-view='cards'] table.stacked-table tr.is-overdue td:first-child,
+  [data-table-view='cards'] table.stacked-table tr.is-due-soon td:first-child {
     box-shadow: none;
   }
-  table.stacked-table td {
+  [data-table-view='cards'] table.stacked-table td {
     display: grid;
     grid-template-columns: 88px minmax(0, 1fr);
     align-items: center;
@@ -880,8 +1023,9 @@ tr.is-due-soon td:nth-child(4) {
     padding: 4px 8px;
     text-align: left;
     min-width: 0;
+    position: static;
   }
-  table.stacked-table td::before {
+  [data-table-view='cards'] table.stacked-table td::before {
     content: attr(data-label);
     font-size: 0.72rem;
     font-weight: 700;
@@ -889,56 +1033,64 @@ tr.is-due-soon td:nth-child(4) {
     letter-spacing: 0.04em;
     color: var(--color-muted);
   }
-  table.stacked-table td.row-actions {
+  [data-table-view='cards'] table.stacked-table td.row-actions {
     display: flex;
     padding-top: 8px;
     width: auto;
   }
-  table.stacked-table td:not([data-label]) {
+  [data-table-view='cards'] table.stacked-table td:not([data-label]) {
     display: block;
   }
-  table.stacked-table td:not([data-label])::before {
+  [data-table-view='cards'] table.stacked-table td:first-child {
+    background: transparent;
+  }
+  [data-table-view='cards'] table.stacked-table td:not([data-label])::before {
     content: none;
   }
   /* Column sizing/centring from the desktop grid would squash these one-per-line cells. */
-  table.stacked-table td.col-check, table.stacked-table td.col-notes, table.stacked-table td.col-title {
+  [data-table-view='cards'] table.stacked-table td.col-check,
+  [data-table-view='cards'] table.stacked-table td.col-notes,
+  [data-table-view='cards'] table.stacked-table td.col-title {
     text-align: left;
     width: auto;
     min-width: 0;
   }
-  table.stacked-table td.col-check input[type='checkbox'] {
+  [data-table-view='cards'] table.stacked-table td.col-check input[type='checkbox'] {
     margin: 0;
   }
-  table.stacked-table td.row-actions .btn {
+  [data-table-view='cards'] table.stacked-table td.row-actions .btn {
     flex: 1;
   }
-  table.stacked-table input[type='checkbox'] {
+  [data-table-view='cards'] table.stacked-table input[type='checkbox'] {
     width: 20px;
     height: 20px;
     justify-self: start;
     margin: 0;
   }
-  table.stacked-table input, table.stacked-table select {
+  [data-table-view='cards'] table.stacked-table input,
+  [data-table-view='cards'] table.stacked-table select {
     border-color: var(--color-border);
     background: var(--color-card);
     padding: 8px;
     min-width: 0;
   }
   /* Keep the number readable on narrow phones; the call/WhatsApp icons wrap below it. */
-  table.stacked-table .phone-cell {
+  [data-table-view='cards'] table.stacked-table .phone-cell {
     flex-wrap: wrap;
   }
-  table.stacked-table .phone-cell input {
+  [data-table-view='cards'] table.stacked-table .phone-cell input {
     min-width: min(120px, 100%);
+  }
+  /* Table view on a phone: inputs need to stay tappable while the table scrolls sideways. */
+  [data-table-view='table'] table.data-table input,
+  [data-table-view='table'] table.data-table select {
+    border-color: var(--color-border);
+    background: var(--color-card);
+    min-width: 110px;
   }
 }
 
 @media (max-width: 480px) {
-  /* minmax(0,...) lets tracks shrink below their content's min-width instead of overflowing. */
-  .summary-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-  }
   .summary-card {
     padding: 12px;
   }

@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient.js';
 import { renderNav } from './nav.js';
+import { renderViewToggle } from './viewToggle.js';
 import { escapeHtml, showToast, readFields, flashSaved, trackDirty, matchesSearch } from './utils.js';
 
 const bodyEl = document.getElementById('items-body');
@@ -169,6 +170,7 @@ searchInput.addEventListener('input', renderItems);
 
 async function init() {
   renderNav('checklist');
+  renderViewToggle();
   await loadItems();
 }
 
