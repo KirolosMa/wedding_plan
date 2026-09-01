@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient.js';
-import { requireSession, renderNav } from './auth.js';
+import { renderNav } from './nav.js';
 import { escapeHtml, showBanner, readFields } from './utils.js';
 
 const bodyEl = document.getElementById('items-body');
@@ -107,7 +107,6 @@ addForm.addEventListener('submit', async (event) => {
 filterSelect.addEventListener('change', renderItems);
 
 async function init() {
-  await requireSession();
   renderNav('checklist');
   await loadItems();
 }

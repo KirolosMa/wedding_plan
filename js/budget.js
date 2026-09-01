@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient.js';
-import { requireSession, renderNav } from './auth.js';
+import { renderNav } from './nav.js';
 import { escapeHtml, formatNumber, showBanner, readFields } from './utils.js';
 
 const bodyEl = document.getElementById('items-body');
@@ -110,7 +110,6 @@ addForm.addEventListener('submit', async (event) => {
 });
 
 async function init() {
-  await requireSession();
   renderNav('budget');
   await loadAll();
 }

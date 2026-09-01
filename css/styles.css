@@ -300,33 +300,6 @@ table.data-table .row-actions {
   margin-bottom: 8px;
 }
 
-/* Auth page */
-.auth-page {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-}
-
-.auth-card {
-  background: var(--color-card);
-  padding: 32px;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  width: min(360px, 90vw);
-}
-
-.auth-card h1 {
-  text-align: center;
-  margin-top: 0;
-}
-
-.subtitle {
-  text-align: center;
-  color: var(--color-muted);
-  margin-top: -8px;
-}
-
 /* Banners */
 .banner {
   padding: 10px 14px;

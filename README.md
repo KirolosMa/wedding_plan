@@ -8,13 +8,13 @@ GitHub Pages, with data synced across devices via [Supabase](https://supabase.co
 
 1. Sign up at https://supabase.com and create a new project (free tier).
 2. Go to the **SQL Editor**, paste the contents of [`supabase/schema.sql`](supabase/schema.sql),
-   and run it. This creates all tables and locks them down with Row Level Security so only
-   signed-in users can read/write data.
-3. Go to **Authentication -> Providers** and make sure **Email** is enabled.
-4. Go to **Authentication -> Settings** and turn **off** "Allow new users to sign up" (or
-   equivalent "Enable sign ups" toggle) so no one else can create an account.
-5. Go to **Authentication -> Users** and manually add two users (you and your partner) with
-   emails and passwords of your choice.
+   and run it. This creates all tables and opens them up to the public `anon` key.
+
+> **No login/access control.** There's no sign-in page — anyone who has your site URL can
+> view and edit all the data (guests, budget, etc.), since the Supabase anon key is public in
+> this repo's client-side code. Fine for a low-stakes personal project shared with your
+> partner; don't share the URL if you'd rather keep it private, and don't put anything
+> sensitive (like full guest addresses or payment details) into the data.
 
 ## 2. Connect the site to your project
 
@@ -25,8 +25,6 @@ GitHub Pages, with data synced across devices via [Supabase](https://supabase.co
    export const SUPABASE_URL = 'https://xxxxx.supabase.co';
    export const SUPABASE_ANON_KEY = 'eyJ...';
    ```
-   The anon key is meant to be public (it's used from the browser); real access control comes
-   from Supabase Auth + the Row Level Security policies in `schema.sql`, not from hiding this key.
 
 ## 3. Run it locally
 
@@ -36,7 +34,7 @@ No build step is required. From the project root:
 python3 -m http.server 8000
 ```
 
-Then open http://localhost:8000 and log in with one of the accounts you created.
+Then open http://localhost:8000.
 
 ## 4. Deploy to GitHub Pages
 
@@ -49,18 +47,16 @@ Then open http://localhost:8000 and log in with one of the accounts you created.
 ## Project structure
 
 - `index.html` / `js/dashboard.js` — countdown, wedding settings, summary stats.
-- `login.html` — sign in / sign out.
 - `venues.html` / `js/venues.js` — venue comparison & decision tracker.
 - `checklist.html` / `js/checklist.js` — task checklist/timeline.
 - `budget.html` / `js/budget.js` — budget tracker.
 - `guests.html` / `js/guests.js` — guest list & RSVP tracking.
 - `vendors.html` / `js/vendors.js` — vendor tracker.
-- `js/config.js`, `js/supabaseClient.js`, `js/auth.js` — shared Supabase setup, session guard,
-  shared nav bar.
+- `js/config.js`, `js/supabaseClient.js`, `js/nav.js` — shared Supabase setup + shared nav bar.
 - `supabase/schema.sql` — database schema + security policies.
 
 ## Notes
 
-- Only the two accounts you create manually can log in — there's no public sign-up.
+- There's no login — see the access control warning above.
 - Photos are linked by URL (no file upload) to keep things simple.
 - Checklist due dates don't send reminders (no email/notification service is configured).

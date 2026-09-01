@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient.js';
-import { requireSession, renderNav } from './auth.js';
+import { renderNav } from './nav.js';
 import { escapeHtml, showBanner, readFields } from './utils.js';
 
 const STATUSES = ['considering', 'contacted', 'booked', 'paid'];
@@ -116,7 +116,6 @@ addForm.addEventListener('submit', async (event) => {
 filterSelect.addEventListener('change', renderVendors);
 
 async function init() {
-  await requireSession();
   renderNav('vendors');
   await loadVendors();
 }

@@ -72,7 +72,7 @@ create table if not exists public.vendors (
   created_at timestamptz not null default now()
 );
 
--- Lock every table down to the two signed-in accounts only (no public access, no public sign-up).
+-- No login: anyone with the anon key (public in the deployed site) can read/write freely.
 alter table public.wedding_info enable row level security;
 alter table public.venues enable row level security;
 alter table public.checklist_items enable row level security;
@@ -80,9 +80,9 @@ alter table public.budget_items enable row level security;
 alter table public.guests enable row level security;
 alter table public.vendors enable row level security;
 
-create policy "Authenticated full access" on public.wedding_info for all to authenticated using (true) with check (true);
-create policy "Authenticated full access" on public.venues for all to authenticated using (true) with check (true);
-create policy "Authenticated full access" on public.checklist_items for all to authenticated using (true) with check (true);
-create policy "Authenticated full access" on public.budget_items for all to authenticated using (true) with check (true);
-create policy "Authenticated full access" on public.guests for all to authenticated using (true) with check (true);
-create policy "Authenticated full access" on public.vendors for all to authenticated using (true) with check (true);
+create policy "Public full access" on public.wedding_info for all to anon using (true) with check (true);
+create policy "Public full access" on public.venues for all to anon using (true) with check (true);
+create policy "Public full access" on public.checklist_items for all to anon using (true) with check (true);
+create policy "Public full access" on public.budget_items for all to anon using (true) with check (true);
+create policy "Public full access" on public.guests for all to anon using (true) with check (true);
+create policy "Public full access" on public.vendors for all to anon using (true) with check (true);

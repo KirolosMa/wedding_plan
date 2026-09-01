@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient.js';
-import { requireSession, renderNav } from './auth.js';
+import { renderNav } from './nav.js';
 import { formatNumber, formatDate, showBanner, readFields } from './utils.js';
 
 const banner = document.getElementById('banner');
@@ -110,7 +110,6 @@ settingsForm.addEventListener('submit', async (event) => {
 });
 
 async function init() {
-  await requireSession();
   renderNav('dashboard');
   await loadDashboard();
 }
