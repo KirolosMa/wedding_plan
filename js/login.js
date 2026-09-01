@@ -3,9 +3,16 @@ import { supabase } from './supabaseClient.js';
 const form = document.getElementById('login-form');
 const errorEl = document.getElementById('login-error');
 
-const { data: { session } } = await supabase.auth.getSession();
-if (session) {
-  window.location.href = 'index.html';
+// Wrapped so a Supabase connectivity issue (e.g. config.js not filled in yet) can't
+// prevent the submit listener below from being attached.
+try {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    window.location.href = 'index.html';
+  }
+} catch (err) {
+  errorEl.textContent = `Could not reach Supabase: ${err.message}. Check js/config.js.`;
+  errorEl.hidden = false;
 }
 
 form.addEventListener('submit', async (event) => {
