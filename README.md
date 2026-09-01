@@ -9,6 +9,9 @@ GitHub Pages, with data synced across devices via [Supabase](https://supabase.co
 1. Sign up at https://supabase.com and create a new project (free tier).
 2. Go to the **SQL Editor**, paste the contents of [`supabase/schema.sql`](supabase/schema.sql),
    and run it. This creates all tables and opens them up to the public `anon` key.
+3. (Optional) Also run [`supabase/seed_guests.sql`](supabase/seed_guests.sql) in the SQL editor
+   to bulk-load the guest list. Side/RSVP/meal choice come in unset — fill those in later on
+   guests.html.
 
 > **No login/access control.** There's no sign-in page — anyone who has your site URL can
 > view and edit all the data (guests, budget, etc.), since the Supabase anon key is public in
