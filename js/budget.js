@@ -1,10 +1,11 @@
 import { supabase } from './supabaseClient.js';
 import { renderNav } from './nav.js';
-import { escapeHtml, formatNumber, showBanner, readFields } from './utils.js';
+import { escapeHtml, formatCurrency, showToast, readFields, flashSaved, trackDirty, matchesSearch } from './utils.js';
 
 const bodyEl = document.getElementById('items-body');
 const addForm = document.getElementById('add-item-form');
-const banner = document.getElementById('banner');
+const searchInput = document.getElementById('search-input');
+const resultCount = document.getElementById('result-count');
 const statTotalBudget = document.getElementById('stat-total-budget');
 const statEstimated = document.getElementById('stat-estimated');
 const statActual = document.getElementById('stat-actual');
@@ -14,13 +15,19 @@ const progressBar = document.getElementById('progress-bar');
 let items = [];
 let totalBudget = 0;
 
+function setLoading(message) {
+  bodyEl.innerHTML = `<tr><td colspan="5"><div class="state-message">${message}</div></td></tr>`;
+}
+
 async function loadAll() {
+  setLoading('Loading budget…');
   const [itemsRes, infoRes] = await Promise.all([
     supabase.from('budget_items').select('*'),
     supabase.from('wedding_info').select('total_budget').eq('id', 1).single(),
   ]);
   if (itemsRes.error) {
-    showBanner(banner, `Could not load budget: ${itemsRes.error.message}`);
+    showToast(`Could not load budget: ${itemsRes.error.message}`);
+    setLoading('Could not load budget.');
     return;
   }
   items = itemsRes.data;
@@ -38,10 +45,11 @@ function renderSummary() {
   const actual = items.reduce((sum, i) => sum + Number(i.actual_cost ?? 0), 0);
   const remaining = totalBudget - actual;
 
-  statTotalBudget.textContent = formatNumber(totalBudget);
-  statEstimated.textContent = formatNumber(estimated);
-  statActual.textContent = formatNumber(actual);
-  statRemaining.textContent = formatNumber(remaining);
+  statTotalBudget.textContent = formatCurrency(totalBudget);
+  statEstimated.textContent = formatCurrency(estimated);
+  statActual.textContent = formatCurrency(actual);
+  statRemaining.textContent = formatCurrency(remaining);
+  statRemaining.classList.toggle('is-negative', remaining < 0);
 
   const pct = totalBudget > 0 ? Math.min(100, Math.round((actual / totalBudget) * 100)) : 0;
   progressBar.style.width = `${pct}%`;
@@ -49,13 +57,26 @@ function renderSummary() {
 }
 
 function renderItems() {
+  const term = searchInput.value;
+  const list = items
+    .filter((i) => matchesSearch(term, i.category, i.notes))
+    .sort((a, b) => a.category.localeCompare(b.category));
+
+  resultCount.textContent = items.length ? `Showing ${list.length} of ${items.length} lines` : '';
+
   bodyEl.innerHTML = '';
-  if (items.length === 0) {
-    bodyEl.innerHTML = '<tr><td colspan="5" class="muted">No budget lines yet — add your first one above.</td></tr>';
+  if (list.length === 0) {
+    bodyEl.innerHTML = `<tr><td colspan="5"><div class="state-message">${
+      term.trim()
+        ? '<strong>No matching budget lines</strong>Try a different search term.'
+        : '<strong>No budget lines yet</strong>Use “Add a budget line” above to start tracking costs.'
+    }</div></td></tr>`;
     return;
   }
-  const sorted = [...items].sort((a, b) => a.category.localeCompare(b.category));
-  for (const item of sorted) bodyEl.appendChild(buildRow(item));
+
+  const fragment = document.createDocumentFragment();
+  for (const item of list) fragment.appendChild(buildRow(item));
+  bodyEl.appendChild(fragment);
 }
 
 function buildRow(item) {
@@ -70,30 +91,36 @@ function buildRow(item) {
       <button type="button" class="btn btn-danger" data-action="delete">Delete</button>
     </td>
   `;
-  row.querySelector('[data-action="save"]').addEventListener('click', () => saveItem(item.id, row));
-  row.querySelector('[data-action="delete"]').addEventListener('click', () => deleteItem(item.id));
+  row.querySelector('[data-action="save"]').addEventListener('click', (e) => saveItem(item, row, e.currentTarget));
+  row.querySelector('[data-action="delete"]').addEventListener('click', () => deleteItem(item));
+  trackDirty(row);
   return row;
 }
 
-async function saveItem(id, row) {
+// Updates local state instead of refetching so the list doesn't jump back to the top mid-edit.
+async function saveItem(item, row, button) {
   const fields = readFields(row);
-  const { error } = await supabase.from('budget_items').update(fields).eq('id', id);
+  const { error } = await supabase.from('budget_items').update(fields).eq('id', item.id);
   if (error) {
-    showBanner(banner, `Could not save budget line: ${error.message}`);
+    showToast(`Could not save budget line: ${error.message}`);
     return;
   }
-  await loadAll();
-  showBanner(banner, 'Saved.', 'success');
+  Object.assign(item, fields);
+  row.classList.remove('is-dirty');
+  flashSaved(button);
+  renderSummary();
 }
 
-async function deleteItem(id) {
-  if (!confirm('Delete this budget line?')) return;
-  const { error } = await supabase.from('budget_items').delete().eq('id', id);
+async function deleteItem(item) {
+  if (!confirm(`Delete the “${item.category}” budget line?`)) return;
+  const { error } = await supabase.from('budget_items').delete().eq('id', item.id);
   if (error) {
-    showBanner(banner, `Could not delete budget line: ${error.message}`);
+    showToast(`Could not delete budget line: ${error.message}`);
     return;
   }
-  await loadAll();
+  items = items.filter((i) => i.id !== item.id);
+  renderAll();
+  showToast('Budget line removed.', 'success');
 }
 
 addForm.addEventListener('submit', async (event) => {
@@ -102,12 +129,15 @@ addForm.addEventListener('submit', async (event) => {
   if (!payload.category) return;
   const { error } = await supabase.from('budget_items').insert(payload);
   if (error) {
-    showBanner(banner, `Could not add budget line: ${error.message}`);
+    showToast(`Could not add budget line: ${error.message}`);
     return;
   }
   addForm.reset();
   await loadAll();
+  showToast(`${payload.category} added.`, 'success');
 });
+
+searchInput.addEventListener('input', renderItems);
 
 async function init() {
   renderNav('budget');

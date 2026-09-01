@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard – Wedding Planner</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <meta name="theme-color" content="#b76e79" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
@@ -15,8 +17,6 @@
       <div id="countdown-label" class="muted"></div>
     </div>
 
-    <p id="banner" class="banner" hidden></p>
-
     <div class="summary-grid">
       <a href="venues.html" class="summary-card">
         <h3>Venues</h3>
@@ -26,6 +26,7 @@
       <a href="checklist.html" class="summary-card">
         <h3>Checklist</h3>
         <div class="value" id="stat-checklist">—</div>
+        <span class="muted" id="stat-checklist-sub"></span>
         <div class="progress"><div id="checklist-progress" class="progress-bar" style="width: 0%;"></div></div>
       </a>
       <a href="budget.html" class="summary-card">

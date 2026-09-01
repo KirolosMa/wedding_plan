@@ -1,11 +1,12 @@
 import { supabase } from './supabaseClient.js';
 import { renderNav } from './nav.js';
-import { escapeHtml, showBanner, readFields } from './utils.js';
+import { escapeHtml, showToast, readFields, flashSaved, trackDirty, matchesSearch } from './utils.js';
 
 const bodyEl = document.getElementById('items-body');
 const addForm = document.getElementById('add-item-form');
 const filterSelect = document.getElementById('filter-select');
-const banner = document.getElementById('banner');
+const searchInput = document.getElementById('search-input');
+const resultCount = document.getElementById('result-count');
 const statInvited = document.getElementById('stat-invited');
 const statYes = document.getElementById('stat-yes');
 const statNo = document.getElementById('stat-no');
@@ -13,10 +14,16 @@ const statPending = document.getElementById('stat-pending');
 
 let guests = [];
 
+function setLoading(message) {
+  bodyEl.innerHTML = `<tr><td colspan="8"><div class="state-message">${message}</div></td></tr>`;
+}
+
 async function loadGuests() {
+  setLoading('Loading guests…');
   const { data, error } = await supabase.from('guests').select('*');
   if (error) {
-    showBanner(banner, `Could not load guests: ${error.message}`);
+    showToast(`Could not load guests: ${error.message}`);
+    setLoading('Could not load guests.');
     return;
   }
   guests = data;
@@ -36,16 +43,30 @@ function renderSummary() {
 }
 
 function renderGuests() {
+  const term = searchInput.value;
   let list = [...guests];
   if (filterSelect.value !== 'all') list = list.filter((g) => g.rsvp_status === filterSelect.value);
+  list = list.filter((g) => matchesSearch(term, g.name, g.meal_choice, g.notes, g.side));
   list.sort((a, b) => a.name.localeCompare(b.name));
+
+  resultCount.textContent = guests.length
+    ? `Showing ${list.length} of ${guests.length} guests`
+    : '';
 
   bodyEl.innerHTML = '';
   if (list.length === 0) {
-    bodyEl.innerHTML = '<tr><td colspan="8" class="muted">No guests yet — add your first one above.</td></tr>';
+    const isFiltered = term.trim() || filterSelect.value !== 'all';
+    bodyEl.innerHTML = `<tr><td colspan="8"><div class="state-message">${
+      isFiltered
+        ? '<strong>No matching guests</strong>Try a different search or filter.'
+        : '<strong>No guests yet</strong>Use “Add a guest” above to start your list.'
+    }</div></td></tr>`;
     return;
   }
-  for (const guest of list) bodyEl.appendChild(buildRow(guest));
+
+  const fragment = document.createDocumentFragment();
+  for (const guest of list) fragment.appendChild(buildRow(guest));
+  bodyEl.appendChild(fragment);
 }
 
 function buildRow(guest) {
@@ -75,30 +96,36 @@ function buildRow(guest) {
       <button type="button" class="btn btn-danger" data-action="delete">Delete</button>
     </td>
   `;
-  row.querySelector('[data-action="save"]').addEventListener('click', () => saveGuest(guest.id, row));
-  row.querySelector('[data-action="delete"]').addEventListener('click', () => deleteGuest(guest.id));
+  row.querySelector('[data-action="save"]').addEventListener('click', (e) => saveGuest(guest, row, e.currentTarget));
+  row.querySelector('[data-action="delete"]').addEventListener('click', () => deleteGuest(guest));
+  trackDirty(row);
   return row;
 }
 
-async function saveGuest(id, row) {
+// Updates local state instead of refetching so the list doesn't jump back to the top mid-edit.
+async function saveGuest(guest, row, button) {
   const fields = readFields(row);
-  const { error } = await supabase.from('guests').update(fields).eq('id', id);
+  const { error } = await supabase.from('guests').update(fields).eq('id', guest.id);
   if (error) {
-    showBanner(banner, `Could not save guest: ${error.message}`);
+    showToast(`Could not save guest: ${error.message}`);
     return;
   }
-  await loadGuests();
-  showBanner(banner, 'Saved.', 'success');
+  Object.assign(guest, fields);
+  row.classList.remove('is-dirty');
+  flashSaved(button);
+  renderSummary();
 }
 
-async function deleteGuest(id) {
-  if (!confirm('Delete this guest?')) return;
-  const { error } = await supabase.from('guests').delete().eq('id', id);
+async function deleteGuest(guest) {
+  if (!confirm(`Delete ${guest.name} from the guest list?`)) return;
+  const { error } = await supabase.from('guests').delete().eq('id', guest.id);
   if (error) {
-    showBanner(banner, `Could not delete guest: ${error.message}`);
+    showToast(`Could not delete guest: ${error.message}`);
     return;
   }
-  await loadGuests();
+  guests = guests.filter((g) => g.id !== guest.id);
+  renderAll();
+  showToast(`${guest.name} removed.`, 'success');
 }
 
 addForm.addEventListener('submit', async (event) => {
@@ -107,14 +134,16 @@ addForm.addEventListener('submit', async (event) => {
   if (!payload.name) return;
   const { error } = await supabase.from('guests').insert(payload);
   if (error) {
-    showBanner(banner, `Could not add guest: ${error.message}`);
+    showToast(`Could not add guest: ${error.message}`);
     return;
   }
   addForm.reset();
   await loadGuests();
+  showToast(`${payload.name} added.`, 'success');
 });
 
 filterSelect.addEventListener('change', renderGuests);
+searchInput.addEventListener('input', renderGuests);
 
 async function init() {
   renderNav('guests');

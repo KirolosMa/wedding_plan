@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Guests – Wedding Planner</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <meta name="theme-color" content="#b76e79" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
@@ -13,8 +15,6 @@
       <h1>Guests</h1>
       <span class="muted">Manage your guest list and RSVPs.</span>
     </div>
-
-    <p id="banner" class="banner" hidden></p>
 
     <div class="summary-grid">
       <div class="summary-card">
@@ -69,8 +69,10 @@
     </form>
     </details>
 
-    <div class="page-header">
-      <span></span>
+    <div class="toolbar">
+      <div class="search-box">
+        <input type="search" id="search-input" placeholder="Search guests by name, meal, notes…" aria-label="Search guests" />
+      </div>
       <label class="muted">Show
         <select id="filter-select">
           <option value="all">All</option>
@@ -79,6 +81,7 @@
           <option value="no">Declined</option>
         </select>
       </label>
+      <span class="result-count" id="result-count"></span>
     </div>
 
     <div class="table-wrap">

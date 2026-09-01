@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Budget – Wedding Planner</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <meta name="theme-color" content="#b76e79" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
@@ -13,8 +15,6 @@
       <h1>Budget</h1>
       <span class="muted">Keep estimated and actual costs side by side.</span>
     </div>
-
-    <p id="banner" class="banner" hidden></p>
 
     <div class="summary-grid">
       <div class="summary-card">
@@ -53,6 +53,13 @@
       </div>
     </form>
     </details>
+
+    <div class="toolbar">
+      <div class="search-box">
+        <input type="search" id="search-input" placeholder="Search budget categories, notes…" aria-label="Search budget lines" />
+      </div>
+      <span class="result-count" id="result-count"></span>
+    </div>
 
     <div class="table-wrap">
       <table class="data-table">

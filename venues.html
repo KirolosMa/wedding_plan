@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Venues – Wedding Planner</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <meta name="theme-color" content="#b76e79" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
@@ -13,8 +15,6 @@
       <h1>Venues</h1>
       <span class="muted">Compare and shortlist wedding venues.</span>
     </div>
-
-    <p id="banner" class="banner" hidden></p>
 
     <details class="add-details">
       <summary>Add a venue</summary>
@@ -53,8 +53,10 @@
     </form>
     </details>
 
-    <div class="page-header">
-      <span></span>
+    <div class="toolbar">
+      <div class="search-box">
+        <input type="search" id="search-input" placeholder="Search venues, location, notes…" aria-label="Search venues" />
+      </div>
       <label class="muted">Sort by
         <select id="sort-select">
           <option value="rating">Rating (high to low)</option>
@@ -62,6 +64,7 @@
           <option value="name">Name</option>
         </select>
       </label>
+      <span class="result-count" id="result-count"></span>
     </div>
 
     <div id="venues-list" class="card-grid"></div>

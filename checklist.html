@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Checklist – Wedding Planner</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <meta name="theme-color" content="#b76e79" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
@@ -13,8 +15,6 @@
       <h1>Checklist</h1>
       <span class="muted">Track everything that needs doing before the big day.</span>
     </div>
-
-    <p id="banner" class="banner" hidden></p>
 
     <div class="card" style="margin-bottom: 24px;">
       <span id="progress-label" class="muted">0 of 0 done</span>
@@ -36,8 +36,10 @@
     </form>
     </details>
 
-    <div class="page-header">
-      <span></span>
+    <div class="toolbar">
+      <div class="search-box">
+        <input type="search" id="search-input" placeholder="Search tasks, category, notes…" aria-label="Search tasks" />
+      </div>
       <label class="muted">Show
         <select id="filter-select">
           <option value="all">All</option>
@@ -45,6 +47,7 @@
           <option value="done">Done</option>
         </select>
       </label>
+      <span class="result-count" id="result-count"></span>
     </div>
 
     <div class="table-wrap">

@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vendors – Wedding Planner</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <meta name="theme-color" content="#b76e79" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
@@ -13,8 +15,6 @@
       <h1>Vendors</h1>
       <span class="muted">Track caterers, photographers, florists and more.</span>
     </div>
-
-    <p id="banner" class="banner" hidden></p>
 
     <details class="add-details">
       <summary>Add a vendor</summary>
@@ -42,13 +42,16 @@
     </form>
     </details>
 
-    <div class="page-header">
-      <span></span>
-      <label class="muted">Filter by category
+    <div class="toolbar">
+      <div class="search-box">
+        <input type="search" id="search-input" placeholder="Search vendors, contact, notes…" aria-label="Search vendors" />
+      </div>
+      <label class="muted">Category
         <select id="filter-select">
           <option value="all">All</option>
         </select>
       </label>
+      <span class="result-count" id="result-count"></span>
     </div>
 
     <div id="vendors-list" class="card-grid"></div>

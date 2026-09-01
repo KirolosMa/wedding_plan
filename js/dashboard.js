@@ -1,8 +1,7 @@
 import { supabase } from './supabaseClient.js';
 import { renderNav } from './nav.js';
-import { formatNumber, formatDate, showBanner, readFields } from './utils.js';
+import { formatCurrency, formatDate, showToast, readFields } from './utils.js';
 
-const banner = document.getElementById('banner');
 const coupleNamesEl = document.getElementById('couple-names');
 const countdownDays = document.getElementById('countdown-days');
 const countdownLabel = document.getElementById('countdown-label');
@@ -12,14 +11,14 @@ async function loadDashboard() {
   const [infoRes, venuesRes, checklistRes, budgetRes, guestsRes, vendorsRes] = await Promise.all([
     supabase.from('wedding_info').select('*').eq('id', 1).single(),
     supabase.from('venues').select('status'),
-    supabase.from('checklist_items').select('done'),
+    supabase.from('checklist_items').select('done,due_date'),
     supabase.from('budget_items').select('actual_cost'),
     supabase.from('guests').select('invited,rsvp_status'),
     supabase.from('vendors').select('status'),
   ]);
 
   if (infoRes.error) {
-    showBanner(banner, `Could not load wedding info: ${infoRes.error.message}`);
+    showToast(`Could not load wedding info: ${infoRes.error.message}`);
     return;
   }
 
@@ -74,14 +73,22 @@ function renderChecklist(items) {
   document.getElementById('stat-checklist').textContent = `${done}/${items.length}`;
   const pct = items.length === 0 ? 0 : Math.round((done / items.length) * 100);
   document.getElementById('checklist-progress').style.width = `${pct}%`;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const overdue = items.filter(
+    (i) => !i.done && i.due_date && new Date(`${i.due_date}T00:00:00`) < today
+  ).length;
+  const sub = document.getElementById('stat-checklist-sub');
+  if (sub) sub.textContent = overdue > 0 ? `${overdue} overdue` : 'tasks complete';
 }
 
 function renderBudget(items, info) {
   const actual = items.reduce((sum, i) => sum + Number(i.actual_cost ?? 0), 0);
   const totalBudget = Number(info?.total_budget ?? 0);
-  document.getElementById('stat-budget').textContent = formatNumber(actual);
+  document.getElementById('stat-budget').textContent = formatCurrency(actual);
   document.getElementById('stat-budget-sub').textContent =
-    totalBudget > 0 ? `of ${formatNumber(totalBudget)} budgeted` : 'spent so far';
+    totalBudget > 0 ? `of ${formatCurrency(totalBudget)} budgeted` : 'spent so far';
 }
 
 function renderGuests(guests) {
@@ -102,10 +109,10 @@ settingsForm.addEventListener('submit', async (event) => {
   const fields = readFields(settingsForm);
   const { error } = await supabase.from('wedding_info').update(fields).eq('id', 1);
   if (error) {
-    showBanner(banner, `Could not save settings: ${error.message}`);
+    showToast(`Could not save settings: ${error.message}`);
     return;
   }
-  showBanner(banner, 'Settings saved.', 'success');
+  showToast('Settings saved.', 'success');
   await loadDashboard();
 });
 
