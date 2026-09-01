@@ -9,3 +9,7 @@ node_modules/
 .kilo/
 .vscode/
 .github/agents/
+
+# Raw personal exports (chat transcripts, photos, videos, source PDFs) - not committed;
+# only the distilled seed_*.sql files are.
+imports/

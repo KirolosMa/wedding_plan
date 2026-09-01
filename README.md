@@ -9,9 +9,14 @@ GitHub Pages, with data synced across devices via [Supabase](https://supabase.co
 1. Sign up at https://supabase.com and create a new project (free tier).
 2. Go to the **SQL Editor**, paste the contents of [`supabase/schema.sql`](supabase/schema.sql),
    and run it. This creates all tables and opens them up to the public `anon` key.
-3. (Optional) Also run [`supabase/seed_guests.sql`](supabase/seed_guests.sql) in the SQL editor
-   to bulk-load the guest list. Side/RSVP/meal choice come in unset — fill those in later on
-   guests.html.
+3. (Optional) Also run these in the SQL editor to bulk-load data already gathered:
+   - [`supabase/seed_guests.sql`](supabase/seed_guests.sql) — the guest list (side/RSVP/meal
+     come in unset — fill those in later on guests.html).
+   - [`supabase/seed_venues.sql`](supabase/seed_venues.sql) — venue options pulled from the
+     "Wedding Venues" WhatsApp group (prices/capacities as quoted by each venue; add your own
+     ratings/status on venues.html as you visit/decide).
+   - [`supabase/seed_vendors.sql`](supabase/seed_vendors.sql) — catering/planner/DJ/photography
+     leads from the same group chat.
 
 > **No login/access control.** There's no sign-in page — anyone who has your site URL can
 > view and edit all the data (guests, budget, etc.), since the Supabase anon key is public in
