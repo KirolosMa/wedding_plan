@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checklist – Wedding Planner</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div id="nav"></div>
+  <main class="page">
+    <div class="page-header">
+      <h1>Checklist</h1>
+      <span class="muted">Track everything that needs doing before the big day.</span>
+    </div>
+
+    <p id="banner" class="banner" hidden></p>
+
+    <div class="card" style="margin-bottom: 24px;">
+      <span id="progress-label" class="muted">0 of 0 done</span>
+      <div class="progress"><div id="progress-bar" class="progress-bar" style="width: 0%;"></div></div>
+    </div>
+
+    <form id="add-item-form" class="add-form">
+      <h2>Add a task</h2>
+      <div class="form-grid">
+        <label>Title<input type="text" data-field="title" required /></label>
+        <label>Category<input type="text" data-field="category" placeholder="e.g. Venue, Attire" /></label>
+        <label>Due date<input type="date" data-field="due_date" /></label>
+      </div>
+      <label>Notes<textarea data-field="notes" rows="2"></textarea></label>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Add task</button>
+      </div>
+    </form>
+
+    <div class="page-header">
+      <span></span>
+      <label class="muted">Show
+        <select id="filter-select">
+          <option value="all">All</option>
+          <option value="todo">To do</option>
+          <option value="done">Done</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Done</th>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Due date</th>
+            <th>Notes</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="items-body"></tbody>
+      </table>
+    </div>
+  </main>
+  <script type="module" src="js/checklist.js"></script>
+</body>
+</html>

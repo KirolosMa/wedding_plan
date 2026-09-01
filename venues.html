@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Venues – Wedding Planner</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div id="nav"></div>
+  <main class="page">
+    <div class="page-header">
+      <h1>Venues</h1>
+      <span class="muted">Compare and shortlist wedding venues.</span>
+    </div>
+
+    <p id="banner" class="banner" hidden></p>
+
+    <form id="add-venue-form" class="add-form">
+      <h2>Add a venue</h2>
+      <div class="form-grid">
+        <label>Name<input type="text" data-field="name" required /></label>
+        <label>Location<input type="text" data-field="location" /></label>
+        <label>Price<input type="number" data-field="price" step="0.01" min="0" /></label>
+        <label>Capacity<input type="number" data-field="capacity" min="0" /></label>
+        <label>Rating
+          <select data-field="rating" data-type="number">
+            <option value="">—</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+        </label>
+        <label>Status
+          <select data-field="status">
+            <option value="considering">Considering</option>
+            <option value="visited">Visited</option>
+            <option value="booked">Booked</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </label>
+        <label>Photo URL<input type="url" data-field="photo_url" /></label>
+      </div>
+      <label>Pros<textarea data-field="pros" rows="2"></textarea></label>
+      <label>Cons<textarea data-field="cons" rows="2"></textarea></label>
+      <label>Notes<textarea data-field="notes" rows="2"></textarea></label>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Add venue</button>
+      </div>
+    </form>
+
+    <div class="page-header">
+      <span></span>
+      <label class="muted">Sort by
+        <select id="sort-select">
+          <option value="rating">Rating (high to low)</option>
+          <option value="price">Price (low to high)</option>
+          <option value="name">Name</option>
+        </select>
+      </label>
+    </div>
+
+    <div id="venues-list" class="card-grid"></div>
+  </main>
+  <script type="module" src="js/venues.js"></script>
+</body>
+</html>

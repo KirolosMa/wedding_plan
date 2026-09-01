@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Log in – Wedding Planner</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="auth-page">
+  <main class="auth-card">
+    <h1>💍 Wedding Planner</h1>
+    <p class="subtitle">Sign in to keep planning together.</p>
+    <form id="login-form">
+      <label for="email">Email</label>
+      <input type="email" id="email" required autocomplete="email" />
+      <label for="password">Password</label>
+      <input type="password" id="password" required autocomplete="current-password" />
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Log in</button>
+      </div>
+      <p id="login-error" class="banner banner-error" hidden></p>
+    </form>
+  </main>
+  <script type="module" src="js/login.js"></script>
+</body>
+</html>

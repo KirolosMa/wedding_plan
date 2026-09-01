@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard – Wedding Planner</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div id="nav"></div>
+  <main class="page">
+    <div class="countdown">
+      <div id="couple-names" class="muted"></div>
+      <div class="days" id="countdown-days">—</div>
+      <div id="countdown-label" class="muted"></div>
+    </div>
+
+    <p id="banner" class="banner" hidden></p>
+
+    <div class="summary-grid">
+      <a href="venues.html" class="summary-card">
+        <h3>Venues</h3>
+        <div class="value" id="stat-venues">—</div>
+        <span class="muted" id="stat-venues-sub"></span>
+      </a>
+      <a href="checklist.html" class="summary-card">
+        <h3>Checklist</h3>
+        <div class="value" id="stat-checklist">—</div>
+        <div class="progress"><div id="checklist-progress" class="progress-bar" style="width: 0%;"></div></div>
+      </a>
+      <a href="budget.html" class="summary-card">
+        <h3>Budget</h3>
+        <div class="value" id="stat-budget">—</div>
+        <span class="muted" id="stat-budget-sub"></span>
+      </a>
+      <a href="guests.html" class="summary-card">
+        <h3>Guests</h3>
+        <div class="value" id="stat-guests">—</div>
+        <span class="muted" id="stat-guests-sub"></span>
+      </a>
+      <a href="vendors.html" class="summary-card">
+        <h3>Vendors</h3>
+        <div class="value" id="stat-vendors">—</div>
+        <span class="muted" id="stat-vendors-sub"></span>
+      </a>
+    </div>
+
+    <form id="settings-form" class="add-form">
+      <h2>Wedding settings</h2>
+      <div class="form-grid">
+        <label>Couple names<input type="text" data-field="couple_names" placeholder="e.g. Kirolos &amp; ..." /></label>
+        <label>Wedding date<input type="date" data-field="wedding_date" /></label>
+        <label>Total budget<input type="number" data-field="total_budget" step="0.01" min="0" /></label>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save settings</button>
+      </div>
+    </form>
+  </main>
+  <script type="module" src="js/dashboard.js"></script>
+</body>
+</html>

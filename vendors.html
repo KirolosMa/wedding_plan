@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vendors – Wedding Planner</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div id="nav"></div>
+  <main class="page">
+    <div class="page-header">
+      <h1>Vendors</h1>
+      <span class="muted">Track caterers, photographers, florists and more.</span>
+    </div>
+
+    <p id="banner" class="banner" hidden></p>
+
+    <form id="add-item-form" class="add-form">
+      <h2>Add a vendor</h2>
+      <div class="form-grid">
+        <label>Category<input type="text" data-field="category" placeholder="e.g. Catering" /></label>
+        <label>Name<input type="text" data-field="name" required /></label>
+        <label>Contact name<input type="text" data-field="contact_name" /></label>
+        <label>Email<input type="email" data-field="contact_email" /></label>
+        <label>Phone<input type="tel" data-field="contact_phone" /></label>
+        <label>Price<input type="number" data-field="price" step="0.01" min="0" /></label>
+        <label>Status
+          <select data-field="status">
+            <option value="considering">Considering</option>
+            <option value="contacted">Contacted</option>
+            <option value="booked">Booked</option>
+            <option value="paid">Paid</option>
+          </select>
+        </label>
+      </div>
+      <label>Notes<textarea data-field="notes" rows="2"></textarea></label>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Add vendor</button>
+      </div>
+    </form>
+
+    <div class="page-header">
+      <span></span>
+      <label class="muted">Filter by category
+        <select id="filter-select">
+          <option value="all">All</option>
+        </select>
+      </label>
+    </div>
+
+    <div id="vendors-list" class="card-grid"></div>
+  </main>
+  <script type="module" src="js/vendors.js"></script>
+</body>
+</html>
