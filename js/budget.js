@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient.js';
 import { renderNav } from './nav.js';
-import { escapeHtml, formatCurrency, showToast, readFields, flashSaved, trackDirty, matchesSearch } from './utils.js';
+import { escapeHtml, formatCurrency, formatNumber, showToast, readFields, flashSaved, trackDirty, matchesSearch } from './utils.js';
 
 const bodyEl = document.getElementById('items-body');
 const addForm = document.getElementById('add-item-form');
@@ -82,13 +82,13 @@ function renderItems() {
 function buildRow(item) {
   const row = document.createElement('tr');
   row.innerHTML = `
-    <td><input type="text" data-field="category" value="${escapeHtml(item.category)}" /></td>
-    <td><input type="number" step="0.01" min="0" data-field="estimated_cost" value="${item.estimated_cost ?? 0}" /></td>
-    <td><input type="number" step="0.01" min="0" data-field="actual_cost" value="${item.actual_cost ?? 0}" /></td>
-    <td><input type="text" data-field="notes" value="${escapeHtml(item.notes ?? '')}" /></td>
+    <td data-label="Category" class="col-title"><input type="text" data-field="category" value="${escapeHtml(item.category)}" /></td>
+    <td class="col-num" data-label="Estimated"><input type="text" inputmode="decimal" data-type="number" data-field="estimated_cost" value="${formatNumber(item.estimated_cost ?? 0)}" /></td>
+    <td class="col-num" data-label="Actual"><input type="text" inputmode="decimal" data-type="number" data-field="actual_cost" value="${formatNumber(item.actual_cost ?? 0)}" /></td>
+    <td class="col-notes" data-label="Notes"><input type="text" data-field="notes" value="${escapeHtml(item.notes ?? '')}" /></td>
     <td class="row-actions">
-      <button type="button" class="btn btn-primary" data-action="save">Save</button>
-      <button type="button" class="btn btn-danger" data-action="delete">Delete</button>
+      <button type="button" class="btn btn-primary btn-sm" data-action="save">Save</button>
+      <button type="button" class="btn btn-danger btn-sm" data-action="delete">Delete</button>
     </td>
   `;
   row.querySelector('[data-action="save"]').addEventListener('click', (e) => saveItem(item, row, e.currentTarget));
@@ -100,6 +100,8 @@ function buildRow(item) {
 // Updates local state instead of refetching so the list doesn't jump back to the top mid-edit.
 async function saveItem(item, row, button) {
   const fields = readFields(row);
+  fields.estimated_cost ??= 0;
+  fields.actual_cost ??= 0;
   const { error } = await supabase.from('budget_items').update(fields).eq('id', item.id);
   if (error) {
     showToast(`Could not save budget line: ${error.message}`);
@@ -107,6 +109,8 @@ async function saveItem(item, row, button) {
   }
   Object.assign(item, fields);
   row.classList.remove('is-dirty');
+  row.querySelector('[data-field="estimated_cost"]').value = formatNumber(item.estimated_cost ?? 0);
+  row.querySelector('[data-field="actual_cost"]').value = formatNumber(item.actual_cost ?? 0);
   flashSaved(button);
   renderSummary();
 }
@@ -127,6 +131,8 @@ addForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   const payload = readFields(addForm);
   if (!payload.category) return;
+  payload.estimated_cost ??= 0;
+  payload.actual_cost ??= 0;
   const { error } = await supabase.from('budget_items').insert(payload);
   if (error) {
     showToast(`Could not add budget line: ${error.message}`);

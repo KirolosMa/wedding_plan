@@ -204,7 +204,9 @@ export function readFields(container) {
     if (input.type === 'checkbox') {
       fields[key] = input.checked;
     } else if (input.type === 'number' || input.dataset.type === 'number') {
-      fields[key] = input.value === '' ? null : Number(input.value);
+      const raw = input.value.replace(/[,\s]/g, '');
+      const number = Number(raw);
+      fields[key] = raw === '' || Number.isNaN(number) ? null : number;
     } else {
       fields[key] = input.value.trim ? input.value.trim() : input.value;
       if (fields[key] === '') fields[key] = null;

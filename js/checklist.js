@@ -84,18 +84,22 @@ function dueClass(item) {
   return '';
 }
 
+function rowClass(item) {
+  return [item.done ? 'is-done' : '', dueClass(item)].filter(Boolean).join(' ');
+}
+
 function buildRow(item) {
   const row = document.createElement('tr');
-  row.className = dueClass(item);
+  row.className = rowClass(item);
   row.innerHTML = `
-    <td><input type="checkbox" data-field="done" ${item.done ? 'checked' : ''} /></td>
-    <td><input type="text" data-field="title" value="${escapeHtml(item.title)}" /></td>
-    <td><input type="text" data-field="category" value="${escapeHtml(item.category ?? '')}" /></td>
-    <td><input type="date" data-field="due_date" value="${item.due_date ?? ''}" /></td>
-    <td><input type="text" data-field="notes" value="${escapeHtml(item.notes ?? '')}" /></td>
+    <td class="col-check" data-label="Done"><input type="checkbox" data-field="done" ${item.done ? 'checked' : ''} /></td>
+    <td data-label="Title" class="col-title"><input type="text" data-field="title" value="${escapeHtml(item.title)}" /></td>
+    <td data-label="Category"><input type="text" data-field="category" value="${escapeHtml(item.category ?? '')}" /></td>
+    <td data-label="Due"><input type="date" data-field="due_date" value="${item.due_date ?? ''}" /></td>
+    <td class="col-notes" data-label="Notes"><input type="text" data-field="notes" value="${escapeHtml(item.notes ?? '')}" /></td>
     <td class="row-actions">
-      <button type="button" class="btn btn-primary" data-action="save">Save</button>
-      <button type="button" class="btn btn-danger" data-action="delete">Delete</button>
+      <button type="button" class="btn btn-primary btn-sm" data-action="save">Save</button>
+      <button type="button" class="btn btn-danger btn-sm" data-action="delete">Delete</button>
     </td>
   `;
   row.querySelector('[data-action="save"]').addEventListener('click', (e) => saveItem(item, row, e.currentTarget));
@@ -115,7 +119,7 @@ async function toggleDone(item, row) {
   }
   item.done = done;
   row.classList.remove('is-dirty');
-  row.className = dueClass(item);
+  row.className = rowClass(item);
   renderProgress();
 }
 

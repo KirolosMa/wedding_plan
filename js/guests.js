@@ -110,7 +110,7 @@ function phoneActions(guest) {
 function buildRow(guest) {
   const row = document.createElement('tr');
   row.innerHTML = `
-    <td data-label="Name"><input type="text" data-field="name" value="${escapeHtml(guest.name)}" /></td>
+    <td data-label="Name" class="col-title"><input type="text" data-field="name" value="${escapeHtml(guest.name)}" /></td>
     <td data-label="Mobile">
       <div class="phone-cell">
         <input type="tel" data-field="phone" autocomplete="tel" placeholder="+20 100 123 4567" value="${escapeHtml(guest.phone ?? '')}" />
@@ -124,7 +124,7 @@ function buildRow(guest) {
         <option value="both" ${guest.side === 'both' ? 'selected' : ''}>Both</option>
       </select>
     </td>
-    <td data-label="Invited"><input type="checkbox" data-field="invited" ${guest.invited ? 'checked' : ''} /></td>
+    <td data-label="Invited" class="col-check"><input type="checkbox" data-field="invited" ${guest.invited ? 'checked' : ''} /></td>
     <td data-label="RSVP">
       <select data-field="rsvp_status">
         <option value="pending" ${guest.rsvp_status === 'pending' ? 'selected' : ''}>Pending</option>
@@ -133,8 +133,8 @@ function buildRow(guest) {
       </select>
     </td>
     <td data-label="Meal"><input type="text" data-field="meal_choice" value="${escapeHtml(guest.meal_choice ?? '')}" /></td>
-    <td data-label="+1"><input type="checkbox" data-field="plus_one" ${guest.plus_one ? 'checked' : ''} /></td>
-    <td data-label="Notes"><input type="text" data-field="notes" value="${escapeHtml(guest.notes ?? '')}" /></td>
+    <td data-label="+1" class="col-check"><input type="checkbox" data-field="plus_one" ${guest.plus_one ? 'checked' : ''} /></td>
+    <td data-label="Notes" class="col-notes"><input type="text" data-field="notes" value="${escapeHtml(guest.notes ?? '')}" /></td>
     <td class="row-actions">
       <button type="button" class="btn btn-primary" data-action="save">Save</button>
       <button type="button" class="btn btn-danger" data-action="delete">Delete</button>

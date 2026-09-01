@@ -84,6 +84,14 @@ alter table public.budget_items enable row level security;
 alter table public.guests enable row level security;
 alter table public.vendors enable row level security;
 
+-- Dropped first so this file can be re-run on an existing project without erroring.
+drop policy if exists "Public full access" on public.wedding_info;
+drop policy if exists "Public full access" on public.venues;
+drop policy if exists "Public full access" on public.checklist_items;
+drop policy if exists "Public full access" on public.budget_items;
+drop policy if exists "Public full access" on public.guests;
+drop policy if exists "Public full access" on public.vendors;
+
 create policy "Public full access" on public.wedding_info for all to anon using (true) with check (true);
 create policy "Public full access" on public.venues for all to anon using (true) with check (true);
 create policy "Public full access" on public.checklist_items for all to anon using (true) with check (true);
