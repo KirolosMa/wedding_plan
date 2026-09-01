@@ -348,6 +348,37 @@ form input:focus, form select:focus, form textarea:focus {
   margin-bottom: 10px;
 }
 
+/* Quick-action links (call / WhatsApp / email / social) on a card. */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 10px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 4px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  text-decoration: none;
+  color: var(--color-primary-dark);
+  overflow-wrap: anywhere;
+}
+
+.chip:hover, .chip:focus-visible {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+  text-decoration: none;
+}
+
 .edit-details {
   border-top: 1px solid var(--color-border);
   margin-top: 12px;

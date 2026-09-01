@@ -1,6 +1,19 @@
 import { supabase } from './supabaseClient.js';
 import { renderNav } from './nav.js';
-import { escapeHtml, showToast, readFields, flashSaved, trackDirty, matchesSearch, formatCurrency } from './utils.js';
+import {
+  escapeHtml,
+  showToast,
+  readFields,
+  flashSaved,
+  trackDirty,
+  matchesSearch,
+  formatCurrency,
+  linkify,
+  extractLinks,
+  anchorHtml,
+  telHref,
+  whatsappHref,
+} from './utils.js';
 
 const STATUSES = ['considering', 'contacted', 'booked', 'paid'];
 
@@ -62,13 +75,55 @@ function renderVendors() {
   listEl.appendChild(fragment);
 }
 
-function contactLine(vendor) {
-  const bits = [];
-  if (vendor.contact_name) bits.push(escapeHtml(vendor.contact_name));
-  if (vendor.contact_phone) bits.push(`<a href="tel:${escapeHtml(vendor.contact_phone.replace(/\s/g, ''))}">${escapeHtml(vendor.contact_phone)}</a>`);
-  if (vendor.contact_email) bits.push(`<a href="mailto:${escapeHtml(vendor.contact_email)}">${escapeHtml(vendor.contact_email)}</a>`);
-  if (!bits.length) return '';
-  return `<p class="detail-contact">${bits.join(' · ')}</p>`;
+const SITE_ICONS = [
+  [/instagram\.com/i, '📷', (link) => `@${link.label.split('/')[1] ?? 'Instagram'}`],
+  [/facebook\.com|fb\.(me|com)/i, '📘', () => 'Facebook'],
+  [/tiktok\.com/i, '🎵', () => 'TikTok'],
+  [/youtube\.com|youtu\.be/i, '▶️', () => 'YouTube'],
+  [/wa\.me|whatsapp\.com/i, '💬', () => 'WhatsApp'],
+  [/maps\.(google|app\.goo)|goo\.gl\/maps/i, '📍', () => 'Map'],
+];
+
+function chip(link, icon, text) {
+  return anchorHtml({ ...link, label: `${icon} ${text}` }, 'chip');
+}
+
+function siteChip(link) {
+  const match = SITE_ICONS.find(([pattern]) => pattern.test(link.href));
+  if (!match) return chip(link, '🔗', link.label.split('/')[0]);
+  const [, icon, label] = match;
+  return chip(link, icon, label(link));
+}
+
+// A phone field often holds several numbers ("+20100… / +20122…"), each of which needs its own link.
+function splitPhones(value) {
+  return String(value ?? '')
+    .split(/\s*(?:\/|,|;|&|\bor\b)\s*/i)
+    .map((part) => part.trim())
+    .filter((part) => part.replace(/\D/g, '').length >= 8);
+}
+
+function contactBlock(vendor) {
+  const lines = [];
+  const detail = [vendor.contact_name, vendor.contact_phone].filter(Boolean).map(escapeHtml).join(' · ');
+  if (detail) lines.push(`<p class="detail-contact">${detail}</p>`);
+
+  const chips = [];
+  const phones = splitPhones(vendor.contact_phone);
+  for (const phone of phones) {
+    const suffix = phones.length > 1 ? ` …${phone.replace(/\D/g, '').slice(-4)}` : '';
+    const tel = telHref(phone);
+    const whatsapp = whatsappHref(phone);
+    if (tel) chips.push(chip({ href: tel, label: 'Call' }, '📞', `Call${suffix}`));
+    if (whatsapp) chips.push(chip({ href: whatsapp, label: 'WhatsApp', external: true }, '💬', `WhatsApp${suffix}`));
+  }
+  if (vendor.contact_email) {
+    chips.push(chip({ href: `mailto:${vendor.contact_email}`, label: 'Email' }, '✉️', 'Email'));
+  }
+  for (const link of extractLinks(vendor.notes)) chips.push(siteChip(link));
+
+  if (chips.length) lines.push(`<div class="chip-row">${chips.join('')}</div>`);
+  return lines.join('');
 }
 
 function buildCard(vendor) {
@@ -82,12 +137,12 @@ function buildCard(vendor) {
     <p class="card-summary muted">${escapeHtml(vendor.category ?? 'Uncategorised')}${
       vendor.price ? ` · ${formatCurrency(vendor.price)}` : ''
     }</p>
-    ${contactLine(vendor)}
+    ${contactBlock(vendor)}
     ${
       vendor.notes
         ? `<div class="detail"><span class="detail-label">Notes</span><p class="${
             vendor.notes.length > 220 ? 'clampable' : ''
-          }">${escapeHtml(vendor.notes)}</p></div>`
+          }">${linkify(vendor.notes)}</p></div>`
         : ''
     }
 
@@ -117,7 +172,10 @@ function buildCard(vendor) {
   card.querySelector('[data-action="save"]').addEventListener('click', (e) => saveVendor(vendor, card, e.currentTarget));
   card.querySelector('[data-action="delete"]').addEventListener('click', () => deleteVendor(vendor));
   card.querySelectorAll('.clampable').forEach((p) =>
-    p.addEventListener('click', () => p.classList.toggle('expanded'))
+    p.addEventListener('click', (e) => {
+      if (e.target.closest('a')) return;
+      p.classList.toggle('expanded');
+    })
   );
   trackDirty(card);
   return card;

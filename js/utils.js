@@ -24,6 +24,78 @@ export function formatDate(value) {
   return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
+// Matches, in order: emails, explicit http(s)/www links, then bare domains like
+// "instagram.com/handle" that people paste into notes without a scheme.
+const LINK_PATTERN =
+  /([\w.+-]+@[\w-]+(?:\.[\w-]+)+)|((?:https?:\/\/|www\.)[^\s<>"']+)|((?:[a-z0-9-]+\.)+(?:com|net|org|io|me|co|eg|uk|app|link|shop|store|info|biz)(?:\/[^\s<>"']*)?)/gi;
+
+const TRAILING_PUNCTUATION = /[.,;:!?)\]}>'"]+$/;
+
+// Only ever produces mailto:/https: hrefs, so linkified user text can't inject javascript: URLs.
+function toLink(token) {
+  if (token.includes('@') && !/^https?:\/\//i.test(token)) {
+    return { href: `mailto:${token}`, label: token, external: false };
+  }
+  const href = /^https?:\/\//i.test(token) ? token : `https://${token}`;
+  return { href, label: token.replace(/^https?:\/\//i, '').replace(/^www\./i, ''), external: true };
+}
+
+function* scanLinks(text) {
+  LINK_PATTERN.lastIndex = 0;
+  let match;
+  while ((match = LINK_PATTERN.exec(String(text ?? ''))) !== null) {
+    const token = match[0].replace(TRAILING_PUNCTUATION, '');
+    if (token) yield { token, index: match.index };
+  }
+}
+
+export function anchorHtml({ href, label, external }, className = '') {
+  const attrs = external ? ' target="_blank" rel="noopener noreferrer"' : '';
+  const cls = className ? ` class="${className}"` : '';
+  return `<a href="${escapeHtml(href)}"${cls}${attrs}>${escapeHtml(label)}</a>`;
+}
+
+// Escapes text and turns any URLs/emails inside it into real links.
+export function linkify(text) {
+  const raw = String(text ?? '');
+  if (!raw) return '';
+  let html = '';
+  let cursor = 0;
+  for (const { token, index } of scanLinks(raw)) {
+    html += escapeHtml(raw.slice(cursor, index)) + anchorHtml(toLink(token));
+    cursor = index + token.length;
+  }
+  return html + escapeHtml(raw.slice(cursor));
+}
+
+// Unique web links found in free text, used to build the quick-action chips on a card.
+export function extractLinks(text) {
+  const seen = new Set();
+  const links = [];
+  for (const { token } of scanLinks(text)) {
+    const link = toLink(token);
+    if (!link.external) continue;
+    const key = link.href.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    links.push(link);
+  }
+  return links;
+}
+
+export function telHref(phone) {
+  const cleaned = String(phone ?? '').replace(/[^\d+]/g, '');
+  return cleaned ? `tel:${cleaned}` : null;
+}
+
+// Egyptian-local numbers ("0100…") are normalised to the +20 country code for wa.me.
+export function whatsappHref(phone) {
+  let digits = String(phone ?? '').replace(/\D/g, '');
+  if (digits.startsWith('00')) digits = digits.slice(2);
+  else if (digits.startsWith('0')) digits = `20${digits.slice(1)}`;
+  return digits.length >= 8 ? `https://wa.me/${digits}` : null;
+}
+
 let toastHost;
 
 // Floating, auto-dismissing feedback so a save at the bottom of a long list is still visible.
