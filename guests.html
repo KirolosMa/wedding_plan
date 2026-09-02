@@ -38,6 +38,14 @@
         <h3>Missing mobile</h3>
         <div class="value" id="stat-no-phone">—</div>
       </div>
+      <div class="summary-card">
+        <h3>Invited to church</h3>
+        <div class="value" id="stat-church">—</div>
+      </div>
+      <div class="summary-card">
+        <h3>Invited to venue</h3>
+        <div class="value" id="stat-venue">—</div>
+      </div>
     </div>
 
     <details class="add-details">
@@ -63,6 +71,12 @@
         <label>Meal choice<input type="text" data-field="meal_choice" /></label>
         <label class="muted" style="align-self: end;">
           <input type="checkbox" data-field="invited" checked style="width: auto; display: inline-block;" /> Invited
+        </label>
+        <label class="muted" style="align-self: end;">
+          <input type="checkbox" data-field="invited_church" checked style="width: auto; display: inline-block;" /> Invited to church
+        </label>
+        <label class="muted" style="align-self: end;">
+          <input type="checkbox" data-field="invited_venue" checked style="width: auto; display: inline-block;" /> Invited to venue
         </label>
         <label class="muted" style="align-self: end;">
           <input type="checkbox" data-field="plus_one" style="width: auto; display: inline-block;" /> Plus one
@@ -103,6 +117,8 @@
           <option value="yes">Confirmed</option>
           <option value="no">Declined</option>
           <option value="no-phone">Missing mobile</option>
+          <option value="church">Invited to church</option>
+          <option value="venue">Invited to venue</option>
         </select>
       </label>
       <label class="muted">Side
@@ -128,6 +144,8 @@
             <th>Mobile</th>
             <th>Side</th>
             <th class="col-check">Invited</th>
+            <th class="col-check">Church</th>
+            <th class="col-check">Venue</th>
             <th>RSVP</th>
             <th>Meal</th>
             <th class="col-check">+1</th>

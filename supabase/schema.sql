@@ -52,6 +52,8 @@ create table if not exists public.guests (
   name text not null,
   side text check (side in ('bride', 'groom', 'both')),
   invited boolean not null default true,
+  invited_church boolean not null default true,
+  invited_venue boolean not null default true,
   rsvp_status text not null default 'pending' check (rsvp_status in ('pending', 'yes', 'no')),
   meal_choice text,
   plus_one boolean not null default false,
@@ -62,6 +64,8 @@ create table if not exists public.guests (
 
 -- Added after the first deploy; keeps re-runs of this file upgrading an existing database.
 alter table public.guests add column if not exists phone text;
+alter table public.guests add column if not exists invited_church boolean not null default true;
+alter table public.guests add column if not exists invited_venue boolean not null default true;
 
 create table if not exists public.vendors (
   id uuid primary key default gen_random_uuid(),

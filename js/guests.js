@@ -17,7 +17,7 @@ import {
   downloadFile,
 } from './utils.js';
 
-const COLUMNS = 9;
+const COLUMNS = 11;
 
 const bodyEl = document.getElementById('items-body');
 const addForm = document.getElementById('add-item-form');
@@ -37,6 +37,8 @@ const statYes = document.getElementById('stat-yes');
 const statNo = document.getElementById('stat-no');
 const statPending = document.getElementById('stat-pending');
 const statNoPhone = document.getElementById('stat-no-phone');
+const statChurch = document.getElementById('stat-church');
+const statVenue = document.getElementById('stat-venue');
 const statHeads = document.getElementById('stat-heads');
 
 let guests = [];
@@ -73,12 +75,16 @@ function renderSummary() {
   statPending.textContent = guests.filter((g) => g.rsvp_status === 'pending').length;
   statHeads.textContent = `${confirmed.reduce((sum, g) => sum + (g.plus_one ? 2 : 1), 0)} incl. +1`;
   statNoPhone.textContent = invited.filter((g) => !isValidPhone(g.phone)).length;
+  statChurch.textContent = invited.filter((g) => g.invited_church).length;
+  statVenue.textContent = invited.filter((g) => g.invited_venue).length;
 }
 
 function renderGuests() {
   const term = searchInput.value;
   let list = [...guests];
   if (filterSelect.value === 'no-phone') list = list.filter((g) => !isValidPhone(g.phone));
+  else if (filterSelect.value === 'church') list = list.filter((g) => g.invited_church);
+  else if (filterSelect.value === 'venue') list = list.filter((g) => g.invited_venue);
   else if (filterSelect.value !== 'all') list = list.filter((g) => g.rsvp_status === filterSelect.value);
   if (sideSelect.value !== 'all') list = list.filter((g) => g.side === sideSelect.value);
   list = list.filter((g) => matchesSearch(term, g.name, g.phone, g.meal_choice, g.notes, g.side));
@@ -133,6 +139,8 @@ function buildRow(guest) {
       </select>
     </td>
     <td data-label="Invited" class="col-check"><input type="checkbox" data-field="invited" ${guest.invited ? 'checked' : ''} /></td>
+    <td data-label="Church" class="col-check"><input type="checkbox" data-field="invited_church" ${guest.invited_church ? 'checked' : ''} /></td>
+    <td data-label="Venue" class="col-check"><input type="checkbox" data-field="invited_venue" ${guest.invited_venue ? 'checked' : ''} /></td>
     <td data-label="RSVP">
       <select data-field="rsvp_status">
         <option value="pending" ${guest.rsvp_status === 'pending' ? 'selected' : ''}>Pending</option>
@@ -167,7 +175,7 @@ async function saveGuest(guest, row, button) {
   fields.phone = normalizePhone(fields.phone);
   const { error } = await supabase.from('guests').update(fields).eq('id', guest.id);
   if (error) {
-    showToast(missingPhoneColumn(error) ?? `Could not save guest: ${error.message}`);
+    showToast(missingPhoneColumn(error) ?? missingInviteColumns(error) ?? `Could not save guest: ${error.message}`);
     return;
   }
   Object.assign(guest, fields);
@@ -198,6 +206,14 @@ function missingPhoneColumn(error) {
     : null;
 }
 
+// Same idea for the church/venue invite columns, which also ship as a migration.
+function missingInviteColumns(error) {
+  const message = error.message ?? '';
+  return /invited_(church|venue)/i.test(message) && /(does not exist|schema cache)/i.test(message)
+    ? 'Church/venue invites need one setup step: run supabase/migration_add_guest_church_venue.sql in the Supabase SQL editor.'
+    : null;
+}
+
 addForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   const payload = readFields(addForm);
@@ -205,7 +221,7 @@ addForm.addEventListener('submit', async (event) => {
   payload.phone = normalizePhone(payload.phone);
   const { error } = await supabase.from('guests').insert(payload);
   if (error) {
-    showToast(missingPhoneColumn(error) ?? `Could not add guest: ${error.message}`);
+    showToast(missingPhoneColumn(error) ?? missingInviteColumns(error) ?? `Could not add guest: ${error.message}`);
     return;
   }
   addForm.reset();
@@ -234,12 +250,14 @@ exportButton.addEventListener('click', () => {
     return;
   }
   const rows = [
-    ['Name', 'Mobile', 'Side', 'Invited', 'RSVP', 'Meal', 'Plus one', 'Notes'],
+    ['Name', 'Mobile', 'Side', 'Invited', 'Church', 'Venue', 'RSVP', 'Meal', 'Plus one', 'Notes'],
     ...visible.map((g) => [
       g.name,
       normalizePhone(g.phone) ?? '',
       g.side ?? '',
       g.invited ? 'yes' : 'no',
+      g.invited_church ? 'yes' : 'no',
+      g.invited_venue ? 'yes' : 'no',
       g.rsvp_status,
       g.meal_choice ?? '',
       g.plus_one ? 'yes' : 'no',

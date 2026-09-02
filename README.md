@@ -12,6 +12,9 @@ GitHub Pages, with data synced across devices via [Supabase](https://supabase.co
    - If your project was created before guest mobile numbers were added, also run
      [`supabase/migration_add_guest_phone.sql`](supabase/migration_add_guest_phone.sql)
      (re-running `schema.sql` does the same thing).
+   - If your project was created before the church/venue invite tracking was added, also run
+     [`supabase/migration_add_guest_church_venue.sql`](supabase/migration_add_guest_church_venue.sql)
+     (re-running `schema.sql` does the same thing).
 3. (Optional) Also run these in the SQL editor to bulk-load data already gathered:
    - [`supabase/seed_guests.sql`](supabase/seed_guests.sql) — the guest list (side/RSVP/meal
      come in unset — fill those in later on guests.html).
